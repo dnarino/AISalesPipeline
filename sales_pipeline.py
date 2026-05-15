@@ -41,7 +41,7 @@ for config_type, file_path in files.items():
 #Assign loaded configurations from YAML files
 
 
-lead_agents_config= configs["load_agents"] 
+lead_agents_config= configs["lead_agents"] 
 lead_tasks_config= configs["lead_tasks"] 
 email_agents_config= configs["email_agents"] 
 email_tasks_config= configs["email_tasks"] 
@@ -79,12 +79,12 @@ from crewai_tools import SerperDevTool, ScrapeWebsiteTool
 
 lead_data_agent=Agent(
     config=lead_agents_config['lead_data_agent'],
-    tools=[SerperDevTool(),ScrapeWebsiteTool]
+    tools=[SerperDevTool(),ScrapeWebsiteTool()]
 )
 
 cultural_fit_agent =Agent(
     config= lead_agents_config['cultural_fit_agent'],
-    tools=[SerperDevTool(),ScrapeWebsiteTool]
+    tools=[SerperDevTool(),ScrapeWebsiteTool()]
 )
 
 scoring_validation_agent = Agent(
@@ -95,12 +95,14 @@ scoring_validation_agent = Agent(
 
 lead_data_task = Task(
     config= lead_tasks_config['lead_data_collection'],
-    agent=lead_data_agent
+    agent=lead_data_agent,
+    async_execution=True
 )
 
 cultural_fit_task =Task(
     config=lead_tasks_config['cultural_fit_analysis'],
-    agent=cultural_fit_agent
+    agent=cultural_fit_agent,
+    async_execution=True
 )
 
 scoring_validation_task = Task(
@@ -110,3 +112,17 @@ scoring_validation_task = Task(
     output_pydantic=LeadScoringResult
 )
 
+#Creating Crew
+lead_scoring_crew =Crew(
+    agents=[
+        lead_data_agent,
+        cultural_fit_agent,
+        scoring_validation_agent
+    ],
+    tasks=[
+        lead_data_task,
+        cultural_fit_task,
+        scoring_validation_task
+    ],
+    verbose=True
+)
