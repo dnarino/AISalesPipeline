@@ -213,6 +213,28 @@ class SalesPipeline(Flow):
         #Here we would send the emails to the leads
         return emails
     
+if __name__ == "__main__":
+    print("🚀 Starting Sales Pipeline Flow...")
     flow = SalesPipeline()
-
     
+    # kickoff() starts the flow. It is synchronous, so no 'await' is needed.
+    emails = flow.kickoff()
+    import pandas as pd
+    import pprint
+    
+    print("\n--- 💰 LEAD SCORING CREW COSTS ---")
+    df_scoring_metrics = pd.DataFrame([flow.state["score_crews_results"][0].token_usage.dict()])
+    # DeepSeek Pricing: Input ~$0.14/1M, Output ~$0.28/1M
+    scoring_costs = (df_scoring_metrics['prompt_tokens'].sum() * 0.14 / 1_000_000) + \
+                    (df_scoring_metrics['completion_tokens'].sum() * 0.28 / 1_000_000)
+    print(f"Total costs: ${scoring_costs:.6f}")
+    print(df_scoring_metrics.to_string())
+
+    print("\n--- 💰 EMAIL WRITING CREW COSTS ---")
+    df_email_metrics = pd.DataFrame([emails[0].token_usage.dict()])
+    email_costs = (df_email_metrics['prompt_tokens'].sum() * 0.14 / 1_000_000) + \
+                  (df_email_metrics['completion_tokens'].sum() * 0.28 / 1_000_000)
+    print(f"Total costs: ${email_costs:.6f}")
+    print(df_email_metrics.to_string())
+    
+    print("\n✅ Flow Completed!")
