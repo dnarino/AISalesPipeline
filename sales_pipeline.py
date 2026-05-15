@@ -164,3 +164,55 @@ email_writing_crew= Crew(
     ],
     verbose= True
 )
+
+#@Flow
+
+from crewai import Flow
+from crewai.flow.flow import listen, start 
+
+class SalesPipeline(Flow):
+    @start()
+    def fetch_leads(self):
+        #Pull our leads from the database
+        leads =[
+            {
+                "lead_data": {
+                    "name": "João Moura",
+                    "job_title": "Director of Engineering",
+                    "company": "Clearbit",
+                    "email": "joao@clearbit.com",
+                    "use_case": "Using AI Agent to do better data enrichment."
+                },
+            }
+        ]
+        return leads
+    
+    @listen(fetch_leads)
+    def score_leads(self, leads):
+        scores= lead_scoring_crew.kickoff_for_each(leads)
+        self.state["score_crews_results"] =scores
+        return scores
+    #Here we would store the score of the leads
+    @listen(score_leads)
+    def store_leads_score(self, scores):
+        #Here we would store the score of the leads
+        return scores
+    #Here we go throw the scores and filter only the > 70 /100
+    @listen(score_leads)
+    def filter_leads(self, scores):
+        return [score for score in scores if score.pydantic and score.pydantic.lead_score.score > 70]
+    
+    @listen(filter_leads)
+    def write_email(self,filtered_leads):
+        scored_leads = [lead.pydantic.model_dump() for lead in filtered_leads if lead.pydantic]
+        emails = email_writing_crew.kickoff_for_each(scored_leads)
+        return emails
+    
+    @listen(write_email)
+    def send_email(self, emails):
+        #Here we would send the emails to the leads
+        return emails
+    
+    flow = SalesPipeline()
+
+    
