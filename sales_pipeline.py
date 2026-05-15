@@ -126,3 +126,41 @@ lead_scoring_crew =Crew(
     ],
     verbose=True
 )
+
+#<---------------------------------------------------------->
+
+#@Email
+#Add Email Agents
+
+email_content_specialist = Agent(
+    config= email_agents_config['email_content_specialist']
+)
+
+engagement_strategist = Agent(
+    config= email_agents_config['engagement_strategist']
+)
+#Add Tasks
+
+email_drafting= Task(
+    config= email_tasks_config['email_drafting'],
+    agent=email_content_specialist
+)
+
+engagement_optimization = Task(
+    config=email_tasks_config['engagement_optimization'],
+    agent=engagement_strategist
+)
+
+#Add crew
+
+email_writing_crew= Crew(
+    agents=[
+        email_content_specialist,
+        engagement_strategist
+    ],
+    tasks=[
+        email_drafting,
+        engagement_optimization
+    ],
+    verbose= True
+)
